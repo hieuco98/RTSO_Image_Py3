@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, send_file
 from Capture_Image import get_image_rtsp
+from Sending_Image import send_image
 # Khởi tạo Flask app
 app = Flask(__name__)
 
@@ -15,15 +16,17 @@ def get_image():
     try:
         #Bóc tách json data
         new_item = request.get_json()
-        rtsp_url = "rtsp://"+new_item["rtsp_user"]+":"+new_item["rtsp_pass"]+"@"+new_item["rtsp_ip_port"]+"/rtspgetimage"
-
+        #rtsp_url = "rtsp://"+new_item["rtsp_user"]+":"+new_item["rtsp_pass"]+"@"+new_item["rtsp_ip_port"]+"/rtspgetimage"
+        rtsp_url =  "rtsp://admin:duczin96@10.171.17.138:554/onvif1"
         # Lấy tên file ảnh đã lưu trong ổ cứng
         ret_code, ret_string = get_image_rtsp(rtsp_url)
 
         if (ret_code == 1):
             # Đường dẫn tới ảnh
+            #send_image("C:/Users/ADMINZ/Desktop/DemoSystem/RTSP_Image_Py3/601809.jpg")
             image_path = f"./{ret_string}"
             # Trả về file ảnh
+            send_image(image_path)
             return send_file(image_path, mimetype='image/jpeg')
         else:
             return jsonify({'error': ret_string}), 404
