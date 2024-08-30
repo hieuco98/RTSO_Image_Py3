@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request, send_file
 from Capture_Image import get_image_rtsp
 from Sending_Image import send_image
+import time
+import threading
 # Khởi tạo Flask app
 app = Flask(__name__)
 
@@ -10,6 +12,30 @@ data = [
     {'id': 2, 'name': 'Item 2', 'description': 'This is item 2'},
 ]
 
+def auto_send_image():
+    rtsp_url =  "rtsp://admin:duczin96@10.171.17.138:554/onvif1"
+        # Lấy tên file ảnh đã lưu trong ổ cứng
+    ret_code, ret_string = get_image_rtsp(rtsp_url)
+
+    if (ret_code == 1):
+            # Đường dẫn tới ảnh
+            #send_image("C:/Users/ADMINZ/Desktop/DemoSystem/RTSP_Image_Py3/601809.jpg")
+            image_path = f"./{ret_string}"
+            # Trả về file ảnh
+            send_image(image_path)
+          #  return send_file(image_path, mimetype='image/jpeg')
+    else:
+           print("Lỗi")
+           #return jsonify({'error': ret_string}), 404
+
+def set_interval(func, sec):
+    def func_wrapper():
+        set_interval(func, sec)
+        func()
+    t = threading.Timer(sec, func_wrapper)
+    t.start()
+
+set_interval(auto_send_image, 43200) 
 
 @app.route('/rtspgetimage', methods=['GET'])
 def get_image():
@@ -32,6 +58,9 @@ def get_image():
             return jsonify({'error': ret_string}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 404
+
+
+
 
 @app.route('/items', methods=['GET'])
 def get_items():
